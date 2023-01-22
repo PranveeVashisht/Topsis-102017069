@@ -6,7 +6,7 @@ def readme():
 setup(
   name = 'Topsis-102017069',         
   packages = ['Topsis-102017069'],  
-  version = '0.3',     
+  version = '0.4',     
   license='MIT',       
   description = 'TOPSIS Package for Multiple Criteria Decision Making', 
   long_description=readme(),
@@ -14,7 +14,7 @@ setup(
   author = 'PRANVEE VASHISHT',                   
   author_email = 'pranveevashisht@gmail.com',    
   url = 'https://github.com/PranveeVashisht/Topsis-102017069',   
-  download_url = 'https://github.com/PranveeVashisht/Topsis-102017069/archive/refs/tags/v_03.tar.gz',    
+  download_url = 'https://github.com/PranveeVashisht/Topsis-102017069/archive/refs/tags/v_04.tar.gz',    
   install_requires=[            
           'pandas',
           'numpy',
