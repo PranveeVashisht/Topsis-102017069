@@ -11,7 +11,7 @@ setup(
   author = 'PRANVEE VASHISHT',                   # Type in your name
   author_email = 'pranveevashisht@gmail.com',      # Type in your E-Mail
   url = 'https://github.com/PranveeVashisht/Topsis-102017069',   # Provide either the link to your github or to your website
-  download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',    # I explain this later on
+  download_url = 'https://github.com/PranveeVashisht/Topsis-102017069/archive/refs/tags/v_02.tar.gz',    # I explain this later on
   keywords = ['Topsis', 'MCDM', 'package'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
           'pandas',
