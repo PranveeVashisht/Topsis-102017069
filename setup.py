@@ -1,13 +1,16 @@
 from distutils.core import setup
-from pathlib import Path
-this_directory = Path(__file__).parent
-long_description = (this_directory / "README.rst").read_text()
+def readme():
+    with open("README.md") as f:
+        README = f.read()
+    return README
 setup(
   name = 'Topsis-102017069',         
   packages = ['Topsis-102017069'],  
   version = '0.3',     
   license='MIT',       
-  description = 'TOPSIS Package for Multiple Criteria Decision Making',   
+  description = 'TOPSIS Package for Multiple Criteria Decision Making', 
+  long_description=readme(),
+  long_description_content_type="text/markdown",
   author = 'PRANVEE VASHISHT',                   
   author_email = 'pranveevashisht@gmail.com',    
   url = 'https://github.com/PranveeVashisht/Topsis-102017069',   
@@ -28,6 +31,5 @@ setup(
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
   ],
-    long_description=long_description,
-    long_description_content_type='text/x-rst'
+ 
 )
