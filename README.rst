@@ -16,4 +16,8 @@ install this python package, simply type this command in your terminal :
 
 The prerequisites of using this python package are knowing the input
 dataset, the weights, impacts and the result file name as you wish to
-save. \```bash python -m Topsis-102017069.102017069
+save. 
+
+.. code:: bash
+
+   python -m Topsis-102017069.102017069 <InputDataFile> <Weights> <Impact> <Resultfilename>
