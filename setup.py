@@ -1,7 +1,7 @@
 from distutils.core import setup
 from pathlib import Path
 this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+long_description = (this_directory / "README.rst").read_text()
 setup(
   name = 'Topsis-102017069',         # How you named your package folder (MyLib)
   packages = ['Topsis-102017069'],   # Chose the same as "name"
@@ -30,5 +30,5 @@ setup(
     'Programming Language :: Python :: 3.9',
   ],
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type='text/x-rst'
 )
