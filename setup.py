@@ -5,7 +5,7 @@ long_description = (this_directory / "Topsis-102017069.md").read_text()
 setup(
   name = 'Topsis-102017069',         # How you named your package folder (MyLib)
   packages = ['Topsis-102017069'],   # Chose the same as "name"
-  version = '0.1',      # Start with a small number and increase it with every change you make
+  version = '0.2',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'TOPSIS Package for Multiple Criteria Decision Making',   # Give a short description about your library
   author = 'PRANVEE VASHISHT',                   # Type in your name
