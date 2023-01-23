@@ -1,113 +1,140 @@
+from os import path
 import pandas as pd
-import numpy as np
+import math
 import sys
-import os
 
 
-def error_handling(data, weights, impacts):
-    # Read the input file
-    try:
-        matrix = pd.read_csv(data)
-    except:
-        print("Error: Invalid input file")
-        sys.exit(1)
+def topsis(filename, weights, impacts, resultFileName):
+    # READING INPUT FILE
+    dataset = pd.read_csv(filename)
 
-    # Input file must have at least 3 columns
-    if matrix.shape[1] < 3:
-        print("Error: Invalid input file, must have at least 3 columns")
-        sys.exit(1)
+    # ONLY TAKING NUMERICAL VALUES
+    d = dataset.iloc[0:, 1:].values
 
-    # Check if weights and impacts are valid
-    try:
-        weights = np.array(weights, dtype=float)
-        impacts = np.array(impacts)
-    except Exception as e:
-        print(e)
-        print("Error: Invalid weights or impacts")
-        sys.exit(1)
+    # CONVERTING INPUT FILE INTO A MATRIX
+    mat = pd.DataFrame(d)
 
-    # Check for correct number of weights and impacts and if they're separated by commas
-    try:
-        if len(weights) != matrix.shape[1] - 1 or len(impacts) != matrix.shape[1] - 1:
-            print("Error: Invalid number of weights or impacts")
-            sys.exit(1)
-    except:
-        print("Error: Invalid weights or impacts, must be separated by commas")
-        sys.exit(1)
+    if len(mat.columns) != len(weights) and len(mat.columns) != len(impacts):
+        print("Error")
+        exit()
+    # CALCULATING ROOT OF SUM OF SQUARES
+    sumOfSquares = []
+    for col in range(0, len(mat.columns)):
+        X = mat.iloc[0:, [col]].values
+        sum = 0
+        for value in X:
+            sum = sum + math.pow(value, 2)
+        sumOfSquares.append(math.sqrt(sum))
+    # print(sumOfSquares)
 
-    # from 2nd column onwards, all columns must be numeric
-    for col in matrix.columns[1:]:
-        if not pd.api.types.is_numeric_dtype(matrix[col]):
-            print("Error: Invalid input file, all columns must be numeric")
-            sys.exit(1)
+    # FINDING NORMALIZED DECISION MATRIX
+    j = 0
+    while (j < len(mat.columns)):
+        for i in range(0, len(mat)):
+            mat[j][i] = mat[j][i]/sumOfSquares[j]
+        j = j+1
 
-    # Impacts must be either + or -
-    if not all([impact in ["+", "-"] for impact in impacts]):
-        print("Error: Invalid impacts, must be either + or -")
-        sys.exit(1)
+    # FINDING WEIGHTED NORMALIZED DECISION MATRIX
+    k = 0
+    while (k < len(mat.columns)):
+        for i in range(0, len(mat)):
+            mat[k][i] = mat[k][i]*weights[k]
+        k = k+1
 
-    # Weights must be positive
-    if not all([weight > 0 for weight in weights]):
-        print("Error: Invalid weights, must be positive")
-        sys.exit(1)
+    # CALCULATING IDEAL BEST AND IDEAL WORST
+    best = []
+    worst = []
 
-    return matrix, weights, impacts
+    for col in range(0, len(mat.columns)):
+        Y = mat.iloc[0:, [col]].values
 
-#Function to find topsis score and rank
-def topsis(matrix, weights, impact):
+        if impacts[col] == "+":
+            maxi = max(Y)
+            mini = min(Y)
+            best.append(maxi[0])
+            worst.append(mini[0])
 
-    raw_matrix = matrix.drop(matrix.columns[0], axis=1)
+        if impacts[col] == "-":
+            maxi = max(Y)
+            mini = min(Y)
+            best.append(mini[0])
+            worst.append(maxi[0])
 
-    # Convert impacts to 1 or -1
-    impact = np.where(impact == "+", 1, -1)
+    # CALCULATING EUCLIDEAN DISTANCE FROM IDEAL BEST AND WORST (Si+ and Si-)
+    separatePlus = []
+    SiMinus = []
 
-    # Vector Normalization
-    raw_matrix = raw_matrix / np.sqrt(np.sum(raw_matrix**2, axis=0))
+    for row in range(0, len(mat)):
+        temp = 0
+        temp2 = 0
+        wholeRow = mat.iloc[row, 0:].values
+        for value in range(0, len(wholeRow)):
+            temp = temp + (math.pow(wholeRow[value] - best[value], 2))
+            temp2 = temp2 + (math.pow(wholeRow[value] - worst[value], 2))
+        separatePlus.append(math.sqrt(temp))
+        SiMinus.append(math.sqrt(temp2))
 
-    # Calculate the weighted decision matrix
-    weighted_matrix = raw_matrix * weights
+    # CALCULATING PERFORMANCE SCORE
+    Pi = []
 
-    # Calculating ideal best and ideal worst values
-    ideal_best = np.amax(weighted_matrix * impact, axis=0).abs()
-    ideal_worst = np.amin(weighted_matrix * impact, axis=0).abs()
+    for row in range(0, len(mat)):
+        Pi.append(SiMinus[row]/(separatePlus[row] + SiMinus[row]))
 
-    # Calculating euclidean distance from ideal best and ideal worst
-    Si_best = np.sqrt(np.sum((weighted_matrix - ideal_best) ** 2, axis=1))
-    Si_worst = np.sqrt(np.sum((weighted_matrix - ideal_worst) ** 2, axis=1))
+    # FINAL RESULT
+    Rank = []
+    sortedPi = sorted(Pi, reverse=True)
 
-    # Calculating performance score
-    performance_score = Si_worst / (Si_best + Si_worst)
+    for row in range(0, len(mat)):
+        for i in range(0, len(sortedPi)):
+            if Pi[row] == sortedPi[i]:
+                Rank.append(i+1)
 
-    # Calculating rank in descending order
-    rank = performance_score.rank(ascending=False).astype(int)
+    col1 = dataset.iloc[:, [0]].values
+    mat.insert(0, dataset.columns[0], col1)
+    mat['Topsis Score'] = Pi
+    mat['Rank'] = Rank
+    newColNames = []
+    for name in dataset.columns:
+        newColNames.append(name)
+    newColNames.append('Topsis Score')
+    newColNames.append('Rank')
+    mat.columns = newColNames
+
+    # SAVING THE MATRIX INTO A CSV FILE
+    mat.to_csv(resultFileName)
 
 
-    matrix["Performance Score"] = performance_score
-    matrix["Rank"] = rank
+def errorhandling():
+    if len(sys.argv) == 5:
+        # filename
+        filename = sys.argv[1].lower()
+        # weights
+        weights = sys.argv[2].split(",")
+        for i in range(0, len(weights)):
+            weights[i] = int(weights[i])
+        # impacts
+        impacts = sys.argv[3].split(",")
+        # resultFileName
+        resultFileName = sys.argv[-1].lower()
+        #Checking if result filename ends with .csv
+        if ".csv" not in resultFileName:
+            print("ERROR: Result filename should end with a  '.csv'")
+            return
+        #Weights and impacts
+        if path.exists(filename):
+            if len(weights) == len(impacts):
+                topsis(filename, weights, impacts, resultFileName)
+            else:
+                print("ERROR: Number of weights and impacts should be equal.")
+                return
+        else:
+            print("ERROR: Input file does not exist.")
+            return
+    else:
+        print("ERROR: Enter the required number of arguments.")
+        print("SAMPLE INPUT : python <script_name> <input_data_file_name> <weights> <impacts> <result_file_name>")
+        return
 
-    return matrix
 
-def start():
-    if len(sys.argv) != 5:
-        print("Error: Invalid number of arguments")
-        sys.exit(1)
-
-    # Get the input file path, weights and impacts from the command line
-    data= sys.argv[1]
-    weights= sys.argv[2]
-    impacts= sys.argv[3]
-    result= sys.argv[4]
-
-   #Error handling
-    matrix, weights, impacts = error_handling(data, weights, impacts)
-
-    # Implement the TOPSIS method
-    result = topsis(matrix, weights, impacts)
-
-    # Save the result to the output file
-    result.to_csv(result, index=False)
-
-    print("Output saved to", result)
-
-if __name__ == "__main__":
-    start()
+# MAIN FUNCTION
+errorhandling()
